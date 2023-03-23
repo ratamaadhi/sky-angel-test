@@ -125,7 +125,6 @@ export default function Home() {
 
     return () => {
       window.removeEventListener('keydown', handleKeydown);
-      document.exitFullscreen();
     };
   }, []);
 
