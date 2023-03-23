@@ -1,8 +1,10 @@
+const randomNumber = (min, max) => Math.random() * max + min;
+
 export class Cloud {
   constructor(posx, posy) {
     this.posX = posx;
     this.posY = posy;
-    this.speed = 4;
+    this.speed = randomNumber(2, 4);
   }
 
   isDespawn() {

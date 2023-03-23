@@ -1,4 +1,4 @@
-const Parachute = (posX, posY) => {
+const Star = (posX, posY) => {
   const randomNumber = (min, max) => Math.random() * max + min;
   const x = posX;
   let y = posY;
@@ -7,7 +7,7 @@ const Parachute = (posX, posY) => {
 
   const isDead = () => {
     if (ending) return true;
-    if (x <= -(1190 / 12)) return true;
+    if (x <= -(369 / 6)) return true;
     return false;
   };
 
@@ -21,19 +21,19 @@ const Parachute = (posX, posY) => {
 
     if (!ending) {
       if (
-        Math.abs(aircraft.posX - x) < 986 / 12 &&
-        Math.abs(aircraft.posY - y) < 1190 / 12
+        Math.abs(aircraft.posX - x) < 335 / 6 &&
+        Math.abs(aircraft.posY - y) < 369 / 6
       ) {
         ending = true;
-        aircraft.increaseFuel();
+        aircraft.increaseStar();
       }
     }
   };
 
   const draw = (ctx) => {
     const image1 = new Image();
-    image1.src = '/assets/image/prct2.png';
-    ctx.drawImage(image1, x, y, 986 / 12, 1190 / 12);
+    image1.src = '/assets/image/star.png';
+    ctx.drawImage(image1, x, y, 335 / 6, 369 / 6);
   };
   return {
     ending,
@@ -46,4 +46,4 @@ const Parachute = (posX, posY) => {
   };
 };
 
-export default Parachute;
+export default Star;

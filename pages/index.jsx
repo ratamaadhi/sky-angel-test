@@ -1,56 +1,46 @@
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Aircraft } from '../components/Aircraft';
 import { Cloud } from '../components/Cloud';
 import Flybird from '../components/Flybird';
 import Parachute from '../components/Parachute';
+import Star from '../components/Star';
 
 export default function Home() {
-  const [start, setStart] = useState(false);
   const aircraft = new Aircraft(1024 / 8, 768 / 2);
+  let intervalGame;
   let canvas;
   let ctx;
   let lastBirdSpawnAt = Date.now();
   let lastCloudSpawnAt = Date.now();
   let lastParaSpawnAt = Date.now();
+  let lastStarSpawnAt = Date.now();
+  let isStart = false;
 
   const randomNumber = (min, max) => Math.random() * max + min;
-  let birds = [];
+  const birds = [];
   const clouds = [];
   const parachutes = [];
+  const stars = [];
 
   setInterval(() => {
     if (aircraft.fuel > 0) {
       aircraft.decreaseFuel();
+      aircraft.increaseTime();
     }
   }, 1000);
 
-  useEffect(() => {
-    document.onkeydown = (e) => {
-      if (e.keyCode === 32) {
-        setStart(!start);
-      }
-    };
-  }, [start]);
+  function clearIntervalGame() {
+    clearInterval(intervalGame);
+    intervalGame = null;
+  }
 
-  useEffect(() => {
+  function startGame() {
     canvas = document.getElementById('myCanvas');
-    // if (document) {
-    // document.onkeydown = (e) => {
-    //   console.log('document.onkeydown', e.keyCode);
-    //   if (e.keyCode === 32) {
-    //     setStart(!start);
-    //   }
-    // };
-    // }
-
-    if (!aircraft.ending) {
-      setInterval(() => {
-        if (!start) return;
+    if (!intervalGame) {
+      intervalGame = setInterval(() => {
         ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, 1024, 768);
-        aircraft.update();
-        aircraft.draw(ctx);
 
         const random = randomNumber(100, 700);
         if (Date.now() - lastBirdSpawnAt > 1000) {
@@ -58,6 +48,7 @@ export default function Home() {
           birds.push(newBird);
           lastBirdSpawnAt = Date.now();
         }
+
         const randomClouds = randomNumber(-50, 700);
         if (Date.now() - lastCloudSpawnAt > 1000) {
           const newCloud = new Cloud(1060, randomClouds);
@@ -65,11 +56,18 @@ export default function Home() {
           lastCloudSpawnAt = Date.now();
         }
 
-        const randomParahcure = randomNumber(0, 500);
-        if (Date.now() - lastParaSpawnAt > 5000) {
-          const newPara = Parachute(randomParahcure, -10);
+        const randomParahcure = randomNumber(0, 1000);
+        if (Date.now() - lastParaSpawnAt > 3500) {
+          const newPara = Parachute(randomParahcure, -50);
           parachutes.push(newPara);
           lastParaSpawnAt = Date.now();
+        }
+
+        const randomStar = randomNumber(0, 1000);
+        if (Date.now() - lastStarSpawnAt > 2500) {
+          const newStar = Star(randomStar, -50);
+          stars.push(newStar);
+          lastStarSpawnAt = Date.now();
         }
 
         clouds
@@ -86,6 +84,13 @@ export default function Home() {
             prct.draw(ctx);
           });
 
+        stars
+          .filter((st) => !st.isDead())
+          .forEach((str) => {
+            str.update(aircraft);
+            str.draw(ctx);
+          });
+
         birds
           .filter((enemy) => !enemy.isDead())
           .forEach((bird) => {
@@ -93,12 +98,37 @@ export default function Home() {
             bird.draw(ctx);
           });
 
+        aircraft.update();
+        aircraft.draw(ctx);
+
         if (aircraft.ending) {
-          birds = [];
+          clearIntervalGame();
         }
       }, 1000 / 30);
     }
-  });
+  }
+
+  function handleKeydown(e) {
+    if (e.keyCode === 32) {
+      if (aircraft.ending) return;
+      if (isStart) {
+        clearIntervalGame();
+      } else {
+        startGame();
+      }
+      isStart = !isStart;
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeydown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      document.exitFullscreen();
+    };
+  }, []);
+
   return (
     <div className="w-full h-screen">
       <Head>

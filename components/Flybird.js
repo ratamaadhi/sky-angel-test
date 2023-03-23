@@ -1,11 +1,28 @@
+const randomNumber = (min, max) => Math.random() * max + min;
+
 const Flybird = (posX, posY) => {
   let x = posX;
   const y = posY;
-  const speed = 5;
+  const speed = randomNumber(3, 5);
   let ending = false;
 
+  const setImage = () => {
+    const image1 = new Image();
+    image1.src = '/assets/image/bird-pixel1.png';
+    const image2 = new Image();
+    image2.src = '/assets/image/bird-pixel2.png';
+    const image = y < 768 / 2 ? image2 : image1;
+    const width = y < 768 / 2 ? 350 / 8 : 351 / 8;
+    const height = y < 768 / 2 ? 276 / 8 : 231 / 8;
+    return {
+      image,
+      height,
+      width,
+    };
+  };
+
   const isDead = () => {
-    if (x <= -(231 / 8)) return true;
+    if (x <= -setImage().height) return true;
     return false;
   };
 
@@ -18,13 +35,9 @@ const Flybird = (posX, posY) => {
     }
 
     if (!ending) {
-      // console.log('x', x);
-      // console.log('y', y);
-      // console.log('Math.abs(aircraft.posX - x)', Math.abs(aircraft.posX - x));
-      // console.log('Math.abs(aircraft.posY - y)', Math.abs(aircraft.posY - y));
       if (
-        Math.abs(aircraft.posX - x) < 351 / 8 &&
-        Math.abs(aircraft.posY - y) < 231 / 8
+        Math.abs(aircraft.posX - x) < setImage().width &&
+        Math.abs(aircraft.posY - y) < setImage().height
       ) {
         ending = true;
         aircraft.gameOver(aircraft.star);
@@ -33,9 +46,8 @@ const Flybird = (posX, posY) => {
   };
 
   const draw = (ctx) => {
-    const image1 = new Image();
-    image1.src = '/assets/image/bird-pixel1.png';
-    ctx.drawImage(image1, x, y, 351 / 8, 231 / 8);
+    const birdImg = setImage();
+    ctx.drawImage(birdImg.image, x, y, birdImg.width, birdImg.height);
   };
   return {
     ending,

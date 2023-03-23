@@ -21,17 +21,22 @@ export class Aircraft {
     this.star += 1;
   }
 
+  increaseTime() {
+    this.time += 1;
+  }
+
   gameOver(_star) {
+    this.ending = true;
     // eslint-disable-next-line
-    this;
-    document.body.innerHTML = `
-    <center>
-    <br/>
-    <h2>Game Over!</h2>
-    <p>Your Score: ${_star}</p>
-    <button class="bg-red-400 rounded-md px-3 py-2 mt-2 text-white" onClick="location.reload()">Again</button>
-    </center>
-    `;
+    // this;
+    // document.body.innerHTML = `
+    // <center>
+    // <br/>
+    // <h2>Game Over!</h2>
+    // <p>Your Score: ${_star}</p>
+    // <button class="bg-red-400 rounded-md px-3 py-2 mt-2 text-white" onClick="location.reload()">Again</button>
+    // </center>
+    // `;
   }
 
   update() {
@@ -69,6 +74,10 @@ export class Aircraft {
     const image = new Image();
     image.src = '/assets/image/image-airplane.png';
     ctx.drawImage(image, this.posX, this.posY, 340 / 4, 200 / 4);
+
+    ctx.font = '16px Arial';
+    ctx.fillStyle = 'black';
+    ctx.fillText(`Time: ${this.time}`, 15, 55);
 
     ctx.font = '16px Arial';
     ctx.fillStyle = 'black';
