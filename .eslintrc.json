@@ -19,7 +19,16 @@
     "prettier/prettier": ["error"],
     "no-unused-vars": [1, { "args": "after-used", "argsIgnorePattern": "^_" }],
     "react/prop-types": "off",
-    "react/jsx-props-no-spreading": "off"
+    "react/jsx-props-no-spreading": "off",
+    "react/jsx-no-bind": "off",
+    "react/no-unstable-nested-components": [
+      "warn",
+      {
+        "allowAsProps": true,
+        "customValidators": [] /* optional array of validators used for propTypes validation */
+      }
+    ],
+    "no-use-before-define": "off"
   },
   "globals": {
     "React": "readonly"

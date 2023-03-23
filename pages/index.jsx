@@ -1,14 +1,45 @@
+import axios from 'axios';
 import Head from 'next/head';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Aircraft } from '../components/Aircraft';
 import { Cloud } from '../components/Cloud';
 import Flybird from '../components/Flybird';
+import MyModal from '../components/Modal';
 import Parachute from '../components/Parachute';
 import Star from '../components/Star';
 
+function ResultGame({ time = 0, star = 0, setName = () => {} }) {
+  return (
+    <div>
+      <h2 className="text-base">Time : {time}</h2>
+      <h2 className="text-base">Star : {star}</h2>
+      <input
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mt-2"
+        id="playername"
+        type="text"
+        placeholder="Your Name"
+        onChange={(e) => setName(e.target.value)}
+      />
+    </div>
+  );
+}
+
 export default function Home() {
+  const [modalState, setModalState] = useState({
+    isShow: false,
+    title: '',
+    desc: '',
+    textButton: 'oke',
+  });
+  const [player, setPlayer] = useState({
+    name: '',
+    time: 0,
+    star: 0,
+  });
+  const [action, setAction] = useState('');
   const aircraft = new Aircraft(1024 / 8, 768 / 2);
   let intervalGame;
+  let intervalFuel;
   let canvas;
   let ctx;
   let lastBirdSpawnAt = Date.now();
@@ -23,20 +54,23 @@ export default function Home() {
   const parachutes = [];
   const stars = [];
 
-  setInterval(() => {
-    if (aircraft.fuel > 0) {
-      aircraft.decreaseFuel();
-      aircraft.increaseTime();
-    }
-  }, 1000);
-
   function clearIntervalGame() {
     clearInterval(intervalGame);
+    clearInterval(intervalFuel);
     intervalGame = null;
+    intervalFuel = null;
   }
 
   function startGame() {
     canvas = document.getElementById('myCanvas');
+    if (!intervalFuel) {
+      intervalFuel = setInterval(() => {
+        if (aircraft.fuel > 0) {
+          aircraft.decreaseFuel();
+          aircraft.increaseTime();
+        }
+      }, 1000);
+    }
     if (!intervalGame) {
       intervalGame = setInterval(() => {
         ctx = canvas.getContext('2d');
@@ -102,15 +136,94 @@ export default function Home() {
         aircraft.draw(ctx);
 
         if (aircraft.ending) {
+          setAction('GAME_OVER');
+          setPlayer({
+            name: '',
+            time: aircraft.time,
+            star: aircraft.star,
+          });
+          setModalState({
+            ...modalState,
+            isShow: true,
+            title: 'GAME OVER',
+            desc: () => (
+              <ResultGame
+                time={aircraft.time}
+                star={aircraft.star}
+                setName={(name) => setPlayer({ ...player, name })}
+              />
+            ),
+            textButton: 'Continue',
+          });
           clearIntervalGame();
         }
       }, 1000 / 30);
     }
   }
 
+  function submitGame() {
+    return axios.post('http://xxxxxxxxx/register.php', {
+      name: player.name,
+      time: player.time,
+      stars: player.star,
+    });
+  }
+
+  function setRecordPlayer() {
+    const recordPlayer = { ...player };
+    let storagePlayer = JSON.parse(localStorage.getItem('record'));
+    if (!storagePlayer) {
+      storagePlayer = [recordPlayer];
+    } else {
+      storagePlayer = [...storagePlayer, recordPlayer];
+    }
+
+    localStorage.setItem('record', JSON.stringify(storagePlayer));
+  }
+
+  function handleActionModal() {
+    console.log('action', action);
+
+    if (!action) return;
+    if (action === 'GAME_OVER') {
+      // action game over
+      console.log('player.name', player.name);
+      if (!player.name) return;
+      submitGame()
+        .then((res) => {
+          handleCloseModal();
+          newGame();
+        })
+        .catch((err) => {
+          setRecordPlayer();
+          handleCloseModal();
+          newGame();
+        });
+      setAction('');
+    }
+    if (action === 'START_OVER') {
+      handleCloseModal();
+      startGame();
+      setAction('');
+    }
+  }
+
+  function handleCloseModal() {
+    setModalState({
+      ...modalState,
+      isShow: false,
+      title: '',
+      desc: '',
+      textButton: 'oke',
+    });
+  }
+
   function handleKeydown(e) {
+    console.log('e.keyCode', e.keyCode);
+    console.log('isStart', isStart);
     if (e.keyCode === 32) {
       if (aircraft.ending) return;
+      if (action === 'START_OVER') return;
       if (isStart) {
         clearIntervalGame();
       } else {
@@ -120,8 +233,24 @@ export default function Home() {
     }
   }
 
+  function newGame() {
+    setModalState({
+      ...modalState,
+      isShow: true,
+      title: 'Start Game',
+      desc: "Hit 'Space' for start or pause",
+      textButton: 'Start',
+    });
+    setAction('START_OVER');
+    aircraft.ending = false;
+    aircraft.time = 0;
+    aircraft.star = 0;
+    aircraft.fuel = 10;
+  }
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeydown);
+    newGame();
 
     return () => {
       window.removeEventListener('keydown', handleKeydown);
@@ -130,6 +259,15 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen">
+      <MyModal
+        show={modalState.isShow}
+        title={modalState.title}
+        desc={modalState.desc}
+        action={handleActionModal}
+        closeModal={handleCloseModal}
+        textButton={modalState.textButton}
+      />
+
       <Head>
         <title>Sky Angel</title>
         <meta name="description" content="Generated by create next app" />
