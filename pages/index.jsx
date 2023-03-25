@@ -57,10 +57,10 @@ function HistoryPlayer({ list = [] }) {
               key={player?.id ?? idx}
               className="flex items-center mb-2 space-x-2"
             >
-              <h2 className="text-base">No : {player.rank}</h2>
-              <h2 className="text-base">Name : {player.name}</h2>
-              <h2 className="text-base">Star : {player.stars}</h2>
-              <h2 className="text-base">Time : {player.time}</h2>
+              <h2 className="text-base">No : {player.rank},</h2>
+              <h2 className="text-base">Name : {player.name},</h2>
+              <h2 className="text-base">Star : {player.stars},</h2>
+              <h2 className="text-base">Time : {player.time}.</h2>
             </div>
           ))}
       </div>
