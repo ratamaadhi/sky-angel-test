@@ -1,4 +1,6 @@
 const Star = (posX, posY) => {
+  const audio = new Audio('/assets/audio/get-stars.mp3');
+
   const randomNumber = (min, max) => Math.random() * max + min;
   const x = posX;
   let y = posY;
@@ -25,6 +27,7 @@ const Star = (posX, posY) => {
         Math.abs(aircraft.posY - y) < 369 / 6
       ) {
         ending = true;
+        audio.play();
         aircraft.increaseStar();
       }
     }

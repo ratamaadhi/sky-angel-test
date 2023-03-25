@@ -246,7 +246,7 @@ export default function Home() {
           }
           newGame();
         })
-        .catch((err) => {
+        .catch(() => {
           handleCloseModal();
           newGame();
         });
@@ -288,19 +288,19 @@ export default function Home() {
       desc: () => (
         <>
           <div>
-            Hit <b>Space</b> for start or pause
+            Pres <b>Space</b> for start or pause
           </div>
           <div>
-            hit <b>left</b> for go left
+            Pres <b>left</b> for go left
           </div>
           <div>
-            hit <b>right</b> for go right
+            Pres <b>right</b> for go right
           </div>
           <div>
-            hit <b>up</b> for go up{' '}
+            Pres <b>up</b> for go up{' '}
           </div>
           <div>
-            hit <b>down</b> for go down{' '}
+            Pres <b>down</b> for go down{' '}
           </div>
           <HistoryPlayer list={recordPlayer} />
         </>

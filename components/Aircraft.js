@@ -8,6 +8,20 @@ export class Aircraft {
     this.star = 0;
     this.ending = false;
     this.isStart = true;
+    this.audioS = '';
+    this.audioE = '';
+  }
+
+  audioStart() {
+    this.audioS = new Audio('/assets/audio/start.mp3');
+    this.audioS.loop = true;
+    this.audioS.play();
+    return this.audioS;
+  }
+
+  audioEnd() {
+    this.audioE = new Audio('/assets/audio/game-over.mp3');
+    return this.audioE;
   }
 
   decreaseFuel() {
@@ -28,10 +42,17 @@ export class Aircraft {
 
   gameOver(_star) {
     this.ending = true;
+    this.audioS.pause();
+    this.audioE.play();
   }
 
   startPauseGame() {
     this.isStart = !this.isStart;
+    if (this.isStart) {
+      this.audioS.play();
+    } else {
+      this.audioS.pause();
+    }
   }
 
   newGames() {
@@ -39,6 +60,8 @@ export class Aircraft {
     this.time = 0;
     this.star = 0;
     this.fuel = 10;
+    this.audioStart();
+    this.audioEnd();
   }
 
   update() {

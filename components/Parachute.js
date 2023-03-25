@@ -1,4 +1,6 @@
 const Parachute = (posX, posY) => {
+  const audio = new Audio('/assets/audio/get-fuel.mp3');
+  audio.currentTime = 1.5;
   const randomNumber = (min, max) => Math.random() * max + min;
   const x = posX;
   let y = posY;
@@ -25,6 +27,7 @@ const Parachute = (posX, posY) => {
         Math.abs(aircraft.posY - y) < 1190 / 12
       ) {
         ending = true;
+        audio.play();
         aircraft.increaseFuel();
       }
     }
