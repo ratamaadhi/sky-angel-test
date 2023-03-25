@@ -10,9 +10,11 @@ import Star from '../components/Star';
 
 function ResultGame({ time = 0, star = 0, setName = () => {} }) {
   return (
-    <div>
-      <h2 className="text-base">Time : {time}</h2>
-      <h2 className="text-base">Star : {star}</h2>
+    <div className="w-full mt-2">
+      <div className="w-full flex justify-center space-x-3">
+        <h2 className="text-base">Star : {star}</h2>
+        <h2 className="text-base">Time : {time}</h2>
+      </div>
       <input
         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mt-2"
         id="playername"
@@ -136,7 +138,7 @@ export default function Home() {
           }
 
           const randomStar = randomNumber(0, 1000);
-          if (Date.now() - lastStarSpawnAt > 2500) {
+          if (Date.now() - lastStarSpawnAt > 1750) {
             const newStar = Star(randomStar, -50);
             stars.push(newStar);
             lastStarSpawnAt = Date.now();
