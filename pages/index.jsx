@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Head from 'next/head';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Aircraft } from '../components/Aircraft';
 import { Cloud } from '../components/Cloud';
 import Flybird from '../components/Flybird';
@@ -67,6 +67,7 @@ function HistoryPlayer({ list = [] }) {
 }
 
 export default function Home() {
+  const hostname = useRef('');
   const [modalState, setModalState] = useState({
     isShow: false,
     title: '',
@@ -210,12 +211,23 @@ export default function Home() {
     if (!record) {
       record = [];
     }
-    return axios.post('http://localhost:3000/api/register', {
-      name: player.name,
-      time: player.time,
-      stars: player.stars,
-      record,
-    });
+    return axios.post(
+      // `http://localhost:3000/api/register`,
+      `${hostname}/api/register`,
+      {
+        name: player.name,
+        time: player.time,
+        stars: player.stars,
+        record,
+      },
+      {
+        headers: [
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          // ...
+        ],
+      }
+    );
   }
 
   function handleActionModal() {
@@ -304,6 +316,9 @@ export default function Home() {
 
   useEffect(() => {
     newGame();
+    if (window !== undefined) {
+      hostname.current = window.location.hostname;
+    }
 
     return () => {};
   }, []);
