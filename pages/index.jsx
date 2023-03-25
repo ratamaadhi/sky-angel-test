@@ -98,6 +98,7 @@ export default function Home() {
     stars: 0,
   });
   const [action, setAction] = useState('START_OVER');
+  const [loading, setloading] = useState(false);
   const aircraft = new Aircraft(1024 / 8, 768 / 2);
   let intervalGame;
   let intervalFuel;
@@ -254,29 +255,36 @@ export default function Home() {
       // action game over
       const name = player.name.trim();
       if (isNullOrEmpty(name)) return;
+      setloading(true);
       submitGame()
         .then((res) => {
-          handleCloseModal();
           if (res.data) {
             const recordPlayer = res.data.data;
             if (recordPlayer.length > 0) {
               localStorage.setItem('record', JSON.stringify(recordPlayer));
             }
           }
+          setloading(false);
           newGame();
         })
         .catch(() => {
-          handleCloseModal();
+          setloading(false);
           newGame();
         });
     }
     if (action === 'START_OVER') {
-      handleCloseModal();
       aircraft.newGames();
       startGame();
       setAction('');
-      // action = '';
     }
+
+    setModalState({
+      ...modalState,
+      isShow: false,
+      title: '',
+      desc: '',
+      textButton: 'oke',
+    });
   }
 
   function handleCloseModal() {
@@ -287,9 +295,11 @@ export default function Home() {
     }
 
     if (action === 'START_OVER') {
+      aircraft.newGames();
       startGame();
       setAction('');
     }
+
     setModalState({
       ...modalState,
       isShow: false,
@@ -349,9 +359,9 @@ export default function Home() {
         show={modalState.isShow}
         title={modalState.title}
         desc={modalState.desc}
-        action={handleActionModal}
-        closeModal={handleCloseModal}
-        textButton={modalState.textButton}
+        action={loading ? () => {} : handleActionModal}
+        closeModal={loading ? () => {} : handleCloseModal}
+        textButton={loading ? 'loading...' : modalState.textButton}
       />
 
       <Head>
