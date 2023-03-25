@@ -28,7 +28,8 @@
         "customValidators": [] /* optional array of validators used for propTypes validation */
       }
     ],
-    "no-use-before-define": "off"
+    "no-use-before-define": "off",
+    "eqeqeq": "off"
   },
   "globals": {
     "React": "readonly"

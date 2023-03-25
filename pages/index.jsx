@@ -8,6 +8,22 @@ import MyModal from '../components/Modal';
 import Parachute from '../components/Parachute';
 import Star from '../components/Star';
 
+function isNullOrEmpty(str) {
+  if (str === undefined || str == 'undefined') {
+    return true;
+  }
+  if (str == null) {
+    return true;
+  }
+  if (str == '') {
+    return true;
+  }
+  if (str == 'null') {
+    return true;
+  }
+  return false;
+}
+
 function ResultGame({ time = 0, star = 0, setName = () => {} }) {
   return (
     <div className="w-full mt-2">
@@ -236,7 +252,8 @@ export default function Home() {
     if (!action) return;
     if (action === 'GAME_OVER') {
       // action game over
-      if (!player.name) return;
+      const name = player.name.trim();
+      if (isNullOrEmpty(name)) return;
       submitGame()
         .then((res) => {
           handleCloseModal();
@@ -265,7 +282,7 @@ export default function Home() {
   function handleCloseModal() {
     if (action === 'GAME_OVER') {
       const name = player.name.trim();
-      if (!name) return;
+      if (isNullOrEmpty(name)) return;
       setAction('');
     }
 
