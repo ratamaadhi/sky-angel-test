@@ -264,7 +264,8 @@ export default function Home() {
 
   function handleCloseModal() {
     if (action === 'GAME_OVER') {
-      if (!player.name) return;
+      const name = player.name.trim();
+      if (!name) return;
       setAction('');
     }
 
