@@ -213,7 +213,7 @@ export default function Home() {
     }
     return axios.post(
       // `http://localhost:3000/api/register`,
-      `${hostname.current}/api/register`,
+      `/api/register`,
       {
         name: player.name,
         time: player.time,
