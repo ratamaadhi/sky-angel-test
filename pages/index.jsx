@@ -24,6 +24,48 @@ function ResultGame({ time = 0, star = 0, setName = () => {} }) {
   );
 }
 
+function HistoryPlayer({ list = [] }) {
+  let currentCount = -1;
+  let currentRank = 0;
+  let stack = 1;
+  const newList =
+    list &&
+    list.length > 0 &&
+    list
+      .sort((a, b) => b.stars + b.time - (a.stars + b.time))
+      .map((ls) => {
+        const result = { ...ls };
+        if (currentCount !== result.stars + result.time) {
+          currentRank += stack;
+          stack = 1;
+        }
+
+        result.rank = currentRank;
+        currentCount = result.stars + result.time;
+        return result;
+      });
+  return (
+    <div className="border border-blue-100 rounded-md text-blue-900 px-4 py-2 mt-4">
+      <h1 className="text-center text-base font-semibold mb-2">Player Rank</h1>
+      <div className="max-h-24 overflow-y-scroll">
+        {newList &&
+          newList.length > 0 &&
+          newList.map((player, idx) => (
+            <div
+              key={player?.id ?? idx}
+              className="flex items-center mb-2 space-x-2"
+            >
+              <h2 className="text-base">No : {player.rank}</h2>
+              <h2 className="text-base">Name : {player.name}</h2>
+              <h2 className="text-base">Star : {player.stars}</h2>
+              <h2 className="text-base">Time : {player.time}</h2>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [modalState, setModalState] = useState({
     isShow: false,
@@ -34,9 +76,9 @@ export default function Home() {
   const [player, setPlayer] = useState({
     name: '',
     time: 0,
-    star: 0,
+    stars: 0,
   });
-  const [action, setAction] = useState('');
+  const [action, setAction] = useState('START_OVER');
   const aircraft = new Aircraft(1024 / 8, 768 / 2);
   let intervalGame;
   let intervalFuel;
@@ -46,169 +88,176 @@ export default function Home() {
   let lastCloudSpawnAt = Date.now();
   let lastParaSpawnAt = Date.now();
   let lastStarSpawnAt = Date.now();
-  let isStart = false;
 
   const randomNumber = (min, max) => Math.random() * max + min;
-  const birds = [];
-  const clouds = [];
-  const parachutes = [];
-  const stars = [];
-
-  function clearIntervalGame() {
-    clearInterval(intervalGame);
-    clearInterval(intervalFuel);
-    intervalGame = null;
-    intervalFuel = null;
-  }
+  let birds = [];
+  let clouds = [];
+  let parachutes = [];
+  let stars = [];
 
   function startGame() {
     canvas = document.getElementById('myCanvas');
     if (!intervalFuel) {
       intervalFuel = setInterval(() => {
-        if (aircraft.fuel > 0) {
-          aircraft.decreaseFuel();
-          aircraft.increaseTime();
+        if (aircraft.isStart) {
+          if (aircraft.fuel > 0) {
+            aircraft.decreaseFuel();
+            aircraft.increaseTime();
+          }
         }
       }, 1000);
     }
     if (!intervalGame) {
       intervalGame = setInterval(() => {
-        ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, 1024, 768);
+        if (aircraft.isStart) {
+          ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, 1024, 768);
 
-        const random = randomNumber(100, 700);
-        if (Date.now() - lastBirdSpawnAt > 1000) {
-          const newBird = Flybird(1026, random);
-          birds.push(newBird);
-          lastBirdSpawnAt = Date.now();
-        }
+          const random = randomNumber(100, 700);
+          if (Date.now() - lastBirdSpawnAt > 1000) {
+            const newBird = Flybird(1026, random);
+            birds.push(newBird);
+            lastBirdSpawnAt = Date.now();
+          }
 
-        const randomClouds = randomNumber(-50, 700);
-        if (Date.now() - lastCloudSpawnAt > 1000) {
-          const newCloud = new Cloud(1060, randomClouds);
-          clouds.push(newCloud);
-          lastCloudSpawnAt = Date.now();
-        }
+          const randomClouds = randomNumber(-50, 700);
+          if (Date.now() - lastCloudSpawnAt > 1000) {
+            const newCloud = new Cloud(1060, randomClouds);
+            clouds.push(newCloud);
+            lastCloudSpawnAt = Date.now();
+          }
 
-        const randomParahcure = randomNumber(0, 1000);
-        if (Date.now() - lastParaSpawnAt > 3500) {
-          const newPara = Parachute(randomParahcure, -50);
-          parachutes.push(newPara);
-          lastParaSpawnAt = Date.now();
-        }
+          const randomParahcure = randomNumber(0, 1000);
+          if (Date.now() - lastParaSpawnAt > 3500) {
+            const newPara = Parachute(randomParahcure, -50);
+            parachutes.push(newPara);
+            lastParaSpawnAt = Date.now();
+          }
 
-        const randomStar = randomNumber(0, 1000);
-        if (Date.now() - lastStarSpawnAt > 2500) {
-          const newStar = Star(randomStar, -50);
-          stars.push(newStar);
-          lastStarSpawnAt = Date.now();
-        }
+          const randomStar = randomNumber(0, 1000);
+          if (Date.now() - lastStarSpawnAt > 2500) {
+            const newStar = Star(randomStar, -50);
+            stars.push(newStar);
+            lastStarSpawnAt = Date.now();
+          }
 
-        clouds
-          .filter((cloud) => !cloud.isDespawn())
-          .forEach((cl) => {
-            cl.update();
-            cl.draw(ctx);
-          });
+          clouds
+            .filter((cloud) => !cloud.isDespawn())
+            .forEach((cl) => {
+              cl.update();
+              cl.draw(ctx);
+            });
 
-        parachutes
-          .filter((pr) => !pr.isDead())
-          .forEach((prct) => {
-            prct.update(aircraft);
-            prct.draw(ctx);
-          });
+          parachutes
+            .filter((pr) => !pr.isDead())
+            .forEach((prct) => {
+              prct.update(aircraft);
+              prct.draw(ctx);
+            });
 
-        stars
-          .filter((st) => !st.isDead())
-          .forEach((str) => {
-            str.update(aircraft);
-            str.draw(ctx);
-          });
+          stars
+            .filter((st) => !st.isDead())
+            .forEach((str) => {
+              str.update(aircraft);
+              str.draw(ctx);
+            });
 
-        birds
-          .filter((enemy) => !enemy.isDead())
-          .forEach((bird) => {
-            bird.update(aircraft);
-            bird.draw(ctx);
-          });
+          birds
+            .filter((enemy) => !enemy.isDead())
+            .forEach((bird) => {
+              bird.update(aircraft);
+              bird.draw(ctx);
+            });
 
-        aircraft.update();
-        aircraft.draw(ctx);
+          aircraft.update();
+          aircraft.draw(ctx);
 
-        if (aircraft.ending) {
-          setAction('GAME_OVER');
-          setPlayer({
-            name: '',
-            time: aircraft.time,
-            star: aircraft.star,
-          });
-          setModalState({
-            ...modalState,
-            isShow: true,
-            title: 'GAME OVER',
-            desc: () => (
-              <ResultGame
-                time={aircraft.time}
-                star={aircraft.star}
-                setName={(name) => setPlayer({ ...player, name })}
-              />
-            ),
-            textButton: 'Continue',
-          });
-          clearIntervalGame();
+          if (aircraft.ending) {
+            const recordPlayer = JSON.parse(localStorage.getItem('record'));
+            setAction('GAME_OVER');
+            setModalState({
+              ...modalState,
+              isShow: true,
+              title: 'GAME OVER',
+              desc: () => (
+                <>
+                  <HistoryPlayer list={recordPlayer} />
+                  <ResultGame
+                    time={aircraft.time}
+                    star={aircraft.star}
+                    setName={(name) =>
+                      setPlayer({
+                        ...player,
+                        name,
+                        time: aircraft.time,
+                        stars: aircraft.star,
+                      })
+                    }
+                  />
+                </>
+              ),
+              textButton: 'Continue',
+            });
+            aircraft.startPauseGame();
+          }
         }
       }, 1000 / 30);
     }
   }
 
   function submitGame() {
-    return axios.post('http://xxxxxxxxx/register.php', {
+    let record = JSON.parse(localStorage.getItem('record'));
+    if (!record) {
+      record = [];
+    }
+    return axios.post('http://localhost:3000/api/register', {
       name: player.name,
       time: player.time,
-      stars: player.star,
+      stars: player.stars,
+      record,
     });
   }
 
-  function setRecordPlayer() {
-    const recordPlayer = { ...player };
-    let storagePlayer = JSON.parse(localStorage.getItem('record'));
-    if (!storagePlayer) {
-      storagePlayer = [recordPlayer];
-    } else {
-      storagePlayer = [...storagePlayer, recordPlayer];
-    }
-
-    localStorage.setItem('record', JSON.stringify(storagePlayer));
-  }
-
   function handleActionModal() {
-    console.log('action', action);
-
     if (!action) return;
     if (action === 'GAME_OVER') {
       // action game over
-      console.log('player.name', player.name);
       if (!player.name) return;
       submitGame()
         .then((res) => {
           handleCloseModal();
+          if (res.data) {
+            const recordPlayer = res.data.data;
+            if (recordPlayer.length > 0) {
+              localStorage.setItem('record', JSON.stringify(recordPlayer));
+            }
+          }
           newGame();
         })
         .catch((err) => {
-          setRecordPlayer();
           handleCloseModal();
           newGame();
         });
-      setAction('');
     }
     if (action === 'START_OVER') {
       handleCloseModal();
+      aircraft.newGames();
       startGame();
       setAction('');
+      // action = '';
     }
   }
 
   function handleCloseModal() {
+    if (action === 'GAME_OVER') {
+      if (!player.name) return;
+      setAction('');
+    }
+
+    if (action === 'START_OVER') {
+      startGame();
+      setAction('');
+    }
     setModalState({
       ...modalState,
       isShow: false,
@@ -218,43 +267,45 @@ export default function Home() {
     });
   }
 
-  function handleKeydown(e) {
-    console.log('e.keyCode', e.keyCode);
-    console.log('isStart', isStart);
-    if (e.keyCode === 32) {
-      if (aircraft.ending) return;
-      if (action === 'START_OVER') return;
-      if (isStart) {
-        clearIntervalGame();
-      } else {
-        startGame();
-      }
-      isStart = !isStart;
-    }
-  }
-
   function newGame() {
+    const recordPlayer = JSON.parse(localStorage.getItem('record'));
     setModalState({
       ...modalState,
       isShow: true,
       title: 'Start Game',
-      desc: "Hit 'Space' for start or pause",
+      desc: () => (
+        <>
+          <div>
+            Hit <b>Space</b> for start or pause
+          </div>
+          <div>
+            hit <b>left</b> for go left
+          </div>
+          <div>
+            hit <b>right</b> for go right
+          </div>
+          <div>
+            hit <b>up</b> for go up{' '}
+          </div>
+          <div>
+            hit <b>down</b> for go down{' '}
+          </div>
+          <HistoryPlayer list={recordPlayer} />
+        </>
+      ),
       textButton: 'Start',
     });
     setAction('START_OVER');
-    aircraft.ending = false;
-    aircraft.time = 0;
-    aircraft.star = 0;
-    aircraft.fuel = 10;
+    birds = [];
+    clouds = [];
+    parachutes = [];
+    stars = [];
   }
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeydown);
     newGame();
 
-    return () => {
-      window.removeEventListener('keydown', handleKeydown);
-    };
+    return () => {};
   }, []);
 
   return (

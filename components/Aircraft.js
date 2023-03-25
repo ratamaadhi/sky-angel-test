@@ -7,6 +7,7 @@ export class Aircraft {
     this.time = 0;
     this.star = 0;
     this.ending = false;
+    this.isStart = true;
   }
 
   decreaseFuel() {
@@ -27,16 +28,17 @@ export class Aircraft {
 
   gameOver(_star) {
     this.ending = true;
-    // eslint-disable-next-line
-    // this;
-    // document.body.innerHTML = `
-    // <center>
-    // <br/>
-    // <h2>Game Over!</h2>
-    // <p>Your Score: ${_star}</p>
-    // <button class="bg-red-400 rounded-md px-3 py-2 mt-2 text-white" onClick="location.reload()">Again</button>
-    // </center>
-    // `;
+  }
+
+  startPauseGame() {
+    this.isStart = !this.isStart;
+  }
+
+  newGames() {
+    this.ending = false;
+    this.time = 0;
+    this.star = 0;
+    this.fuel = 10;
   }
 
   update() {
@@ -61,6 +63,9 @@ export class Aircraft {
         if (this.posY + this.speed < 734) {
           this.posY += this.speed;
         }
+      }
+      if (e.keyCode === 32 && !this.ending) {
+        this.startPauseGame();
       }
     };
 
