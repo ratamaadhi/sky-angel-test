@@ -288,18 +288,15 @@ export default function Home() {
   }
 
   function handleCloseModal() {
-    if (action === 'GAME_OVER') {
-      const name = player.name.trim();
-      if (isNullOrEmpty(name)) return;
-      setAction('');
-    }
-
     if (action === 'START_OVER') {
       aircraft.newGames();
       startGame();
       setAction('');
+      closeModal();
     }
+  }
 
+  function closeModal() {
     setModalState({
       ...modalState,
       isShow: false,
